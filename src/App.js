@@ -1,6 +1,11 @@
 import React from 'react'
+import {
+  QueryClient,
+  QueryClientProvider,
+} from 'react-query'
 
 import { makeStyles } from '@material-ui/core';
+
 import BioProductFilters from './components/BioProductFilters'
 import BioProducts from './components/BioProducts'
 
@@ -12,14 +17,18 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+const queryClient = new QueryClient()
+
 function App() {
   const classes = useStyles()
 
   return (
-    <div className={classes.root}>
-      <BioProductFilters/>
-      <BioProducts/>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className={classes.root}>
+        <BioProductFilters/>
+        <BioProducts/>
+      </div>
+    </QueryClientProvider>
   );
 }
 

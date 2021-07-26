@@ -1,5 +1,7 @@
 import React from 'react';
+import axios from 'axios'
 import { useForm, Controller } from 'react-hook-form';
+import {useMutation,useQueryClient, useQuery} from 'react-query';
 
 import { Button, Divider, makeStyles } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
@@ -7,7 +9,7 @@ import TextField from '@material-ui/core/TextField';
 import Slider from '@material-ui/core/Slider';
 import Typography from '@material-ui/core/Typography';
 
-import * as DataAPI from '../API/API'
+import {TableContext} from '../TableContext'
 import Categories from './Categories'
 
 const useStyles = makeStyles(theme => ({
@@ -34,9 +36,29 @@ const useStyles = makeStyles(theme => ({
 
 function BioProductFilters(props) {
     const classes = useStyles()
+    const [getState, setState] = React.useContext(TableContext)
     const {control, register, handleSubmit} = useForm()
     const [priceValue, setPriceValue] = React.useState([100, 10000]);
     const [volumeValue, setVolumeValue] = React.useState([100, 10000]);
+
+    const queryClient = useQueryClient()
+
+    const { isLoading, error, data } = useQuery('products', () =>
+        axios('product-list')
+    )
+
+    const mutation = useMutation(axios.get('product-list'), {
+        onSuccess: () => {
+          // Invalidate and refetch
+          queryClient.invalidateQueries('products')
+          setState({
+            ...getState,
+            data: getState.data,
+            pages: getState.pages
+          })
+          //заглушка
+        },
+      })
 
     const handlePriceChange = (event, newValue, field) => {
         setPriceValue(newValue)
@@ -46,8 +68,8 @@ function BioProductFilters(props) {
         setVolumeValue(newValue);
     };
 
-    const onSubmit = (data) => {
-        DataAPI.getProductList(...Object.values(data))
+    const onSubmit = (params) => {
+        mutation.mutate(params)
     }
 
     const priceMarks = [
